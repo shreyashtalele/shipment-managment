@@ -1,4 +1,4 @@
-// Enhanced Animated Auth Page with API Integration, Spinner & Success Message
+// Enhanced Animated Auth Page with API Integration, Tab Spinner & Success Message
 "use client";
 
 import { useState, useEffect } from "react";
@@ -21,6 +21,7 @@ export default function AuthPage() {
   const [success, setSuccess] = useState("");
   const router = useRouter();
   const [apiError, setApiError] = useState("");
+  const [tabSwitching, setTabSwitching] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -56,18 +57,30 @@ export default function AuthPage() {
     }
   };
 
+  const handleTabSwitch = (targetTab: "login" | "register") => {
+    if (tab === targetTab) return;
+    setTabSwitching(true);
+    setTimeout(() => {
+      setTab(targetTab);
+      setTabSwitching(false);
+      setEmail("");
+      setPassword("");
+      setErrors({});
+      setApiError("");
+      setSuccess("");
+    }, 400);
+  };
+
   return (
     <div
       className={`${inter.className} relative flex min-h-screen flex-col md:flex-row bg-gradient-to-br from-white to-gray-100 overflow-hidden`}
     >
-      {/* Floating Bubbles */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
         <div className="absolute w-96 h-96 bg-black opacity-5 rounded-full top-10 left-10 animate-float-slow"></div>
         <div className="absolute w-60 h-60 bg-gray-700 opacity-10 rounded-full top-1/2 left-1/4 animate-float"></div>
         <div className="absolute w-72 h-72 bg-gray-900 opacity-5 rounded-full bottom-10 right-10 animate-float-delay"></div>
       </div>
 
-      {/* Left Section */}
       <div className="md:w-1/2 w-full flex items-center justify-center p-12 z-10">
         <div className="max-w-md space-y-6 animate-fade-in-up">
           <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">
@@ -88,7 +101,6 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Right Section - Auth Card */}
       <div className="md:w-1/2 w-full flex items-center justify-center p-6 z-10">
         <div className="w-full max-w-md backdrop-blur-md bg-white/70 border border-gray-200 p-6 rounded-xl shadow-xl animate-fade-in-up">
           <div className="flex gap-6 border-b border-gray-200 text-sm font-medium text-gray-600 mb-6">
@@ -98,9 +110,14 @@ export default function AuthPage() {
                   ? "text-gray-900 border-b-2 border-black"
                   : "hover:text-gray-900"
               }`}
-              onClick={() => setTab("login")}
+              onClick={() => handleTabSwitch("login")}
             >
-              <LogIn size={16} /> Login
+              <LogIn size={16} />
+              {tabSwitching && tab !== "login" ? (
+                <div className="h-3 w-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "Login"
+              )}
             </button>
             <button
               className={`flex items-center gap-2 pb-2 transition-all ${
@@ -108,9 +125,14 @@ export default function AuthPage() {
                   ? "text-gray-900 border-b-2 border-black"
                   : "hover:text-gray-900"
               }`}
-              onClick={() => setTab("register")}
+              onClick={() => handleTabSwitch("register")}
             >
-              <UserPlus size={16} /> Register
+              <UserPlus size={16} />
+              {tabSwitching && tab !== "register" ? (
+                <div className="h-3 w-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "Register"
+              )}
             </button>
           </div>
 
@@ -194,7 +216,7 @@ export default function AuthPage() {
                   Don’t have an account?{" "}
                   <button
                     type="button"
-                    onClick={() => setTab("register")}
+                    onClick={() => handleTabSwitch("register")}
                     className="text-black hover:underline"
                   >
                     Register
@@ -205,7 +227,7 @@ export default function AuthPage() {
                   Already registered?{" "}
                   <button
                     type="button"
-                    onClick={() => setTab("login")}
+                    onClick={() => handleTabSwitch("login")}
                     className="text-black hover:underline"
                   >
                     Login
@@ -217,7 +239,6 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Animations */}
       <style jsx global>{`
         @keyframes shake {
           0%,
@@ -245,14 +266,12 @@ export default function AuthPage() {
           }
         }
         @keyframes float {
-          0% {
+          0%,
+          100% {
             transform: translateY(0);
           }
           50% {
             transform: translateY(-20px);
-          }
-          100% {
-            transform: translateY(0);
           }
         }
         @keyframes expandBar {
@@ -261,6 +280,11 @@ export default function AuthPage() {
           }
           to {
             width: 100%;
+          }
+        }
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
           }
         }
         .animate-shake {
@@ -288,11 +312,6 @@ export default function AuthPage() {
           border-top-color: transparent;
           border-radius: 50%;
           animation: spin 0.6s linear infinite;
-        }
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
         }
       `}</style>
     </div>

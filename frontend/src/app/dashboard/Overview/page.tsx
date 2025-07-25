@@ -9,10 +9,7 @@ import {
   AlertTriangle,
   Ban,
 } from "lucide-react";
-import { Inter } from "next/font/google";
 import { getAnalyticsSummary, getAllShipments } from "@/api/shipments";
-
-const inter = Inter({ subsets: ["latin"] });
 
 interface Summary {
   total: number;
@@ -32,16 +29,15 @@ interface Shipment {
   estimated_delivery: string;
 }
 
-export default function DashboardOverviewPage() {
+export default function OverviewPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [recentShipments, setRecentShipments] = useState<Shipment[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (token) {
-      fetchAnalytics(token);
-      fetchRecentShipments(token);
-    }
+    if (!token) return;
+    fetchAnalytics(token);
+    fetchRecentShipments(token);
   }, []);
 
   const fetchAnalytics = async (token: string) => {
@@ -49,80 +45,73 @@ export default function DashboardOverviewPage() {
       const data = await getAnalyticsSummary(token);
       setSummary(data);
     } catch (error) {
-      console.error("Failed to fetch analytics:", error);
+      console.error("Error fetching analytics:", error);
     }
   };
 
   const fetchRecentShipments = async (token: string) => {
     try {
       const data = await getAllShipments(token);
-      setRecentShipments(data.slice(0, 10));
+      setRecentShipments(data.slice(0, 5));
     } catch (error) {
-      console.error("Failed to fetch shipments:", error);
+      console.error("Error fetching shipments:", error);
     }
   };
 
   return (
-    <div className={`${inter.className} space-y-8`}>
-      {/* Overview Header */}
-      <section>
-        <h2 className="text-3xl font-semibold mb-2">Dashboard Overview</h2>
-        <p className="text-gray-600">Real-time shipment analytics</p>
-      </section>
+    <div className="p-8 space-y-8 font-sans">
+      <div>
+        <h1 className="text-3xl font-semibold text-gray-800 mb-2">
+          Dashboard Overview
+        </h1>
+        <p className="text-gray-500">Real-time shipment analytics</p>
+      </div>
 
-      {/* Summary Cards */}
-      {summary && (
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <StatCard
-            icon={<LayoutDashboard size={20} />}
-            title="Total Shipments"
-            value={summary.total}
-            subtitle="All-time"
-          />
-          <StatCard
-            icon={<PackageCheck size={20} />}
-            title="Delivered"
-            value={summary.delivered}
-            subtitle="Completed deliveries"
-          />
-          <StatCard
-            icon={<Clock size={20} />}
-            title="Pending"
-            value={summary.pending}
-            subtitle="Awaiting dispatch"
-          />
-          <StatCard
-            icon={<Truck size={20} />}
-            title="In Transit"
-            value={summary.in_transit}
-            subtitle="Currently shipping"
-          />
-          <StatCard
-            icon={<AlertTriangle size={20} />}
-            title="Delayed"
-            value={summary.delayed}
-            subtitle="Late arrivals"
-          />
-          <StatCard
-            icon={<Ban size={20} />}
-            title="Cancelled"
-            value={summary.cancelled}
-            subtitle="Orders cancelled"
-          />
-        </section>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {summary && (
+          <>
+            <StatCard
+              icon={<LayoutDashboard size={20} />}
+              title="Total"
+              value={summary.total}
+            />
+            <StatCard
+              icon={<PackageCheck size={20} />}
+              title="Delivered"
+              value={summary.delivered}
+            />
+            <StatCard
+              icon={<Clock size={20} />}
+              title="Pending"
+              value={summary.pending}
+            />
+            <StatCard
+              icon={<Truck size={20} />}
+              title="In Transit"
+              value={summary.in_transit}
+            />
+            <StatCard
+              icon={<AlertTriangle size={20} />}
+              title="Delayed"
+              value={summary.delayed}
+            />
+            <StatCard
+              icon={<Ban size={20} />}
+              title="Cancelled"
+              value={summary.cancelled}
+            />
+          </>
+        )}
+      </div>
 
-      {/* Recent Shipments Table */}
-      <section className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Recent Shipments</h3>
-        </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold mb-4">Recent Shipments</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-gray-500 uppercase border-b">
               <tr>
                 <th className="py-2 px-4">Tracking ID</th>
-                <th className="py-2 px-4">Source</th>
+                <th className="py-2 px-4">Origin</th>
                 <th className="py-2 px-4">Destination</th>
                 <th className="py-2 px-4">Status</th>
                 <th className="py-2 px-4">Estimated Delivery</th>
@@ -131,9 +120,7 @@ export default function DashboardOverviewPage() {
             <tbody>
               {recentShipments.map((shipment) => (
                 <tr key={shipment.id} className="border-b hover:bg-gray-50">
-                  <td className="py-2 px-4 font-medium text-gray-900">
-                    {shipment.external_tracking_id}
-                  </td>
+                  <td className="py-2 px-4">{shipment.external_tracking_id}</td>
                   <td className="py-2 px-4">{shipment.origin}</td>
                   <td className="py-2 px-4">{shipment.destination}</td>
                   <td className="py-2 px-4">
@@ -163,29 +150,26 @@ export default function DashboardOverviewPage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
 
 function StatCard({
+  icon,
   title,
   value,
-  subtitle,
-  icon,
 }: {
+  icon: React.ReactNode;
   title: string;
   value: number;
-  subtitle: string;
-  icon?: React.ReactNode;
 }) {
   return (
     <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm flex items-center gap-4">
-      {icon && <div className="text-gray-500">{icon}</div>}
+      <div className="text-gray-500">{icon}</div>
       <div>
         <p className="text-sm text-gray-500 mb-1">{title}</p>
         <h4 className="text-2xl font-bold text-gray-900">{value}</h4>
-        <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
       </div>
     </div>
   );

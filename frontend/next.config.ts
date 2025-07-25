@@ -5,7 +5,7 @@ module.exports = {
       {
         source: "/",
         destination: "/auth",
-        permanent: false, // true = 308 (permanent), false = 307 (temporary)
+        permanent: false, 
       },
     ];
   },

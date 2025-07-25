@@ -12,6 +12,8 @@ from app.models.shipping_provider import ShippingProvider
 from app.models.user import User
 from app.schemas.analytics import ShipmentSummary
 from app.auth.dependencies import get_current_user
+from collections import defaultdict
+from fastapi.responses import JSONResponse
 
 router = APIRouter(tags=["Analytics"])
 
@@ -96,3 +98,50 @@ def provider_wise_shipment_count(
         .all()
     )
     return {name: count for name, count in results}
+
+@router.get("/status-trend")
+def get_status_trend(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    results = (
+        db.query(
+            func.date(Shipment.created_at).label("date"),
+            Shipment.status,
+            func.count(Shipment.id)
+        )
+        .filter(Shipment.created_by == current_user.id)
+        .group_by("date", Shipment.status)
+        .order_by("date")
+        .all()
+    )
+
+    trend_data = defaultdict(lambda: defaultdict(int))
+
+    for date, status, count in results:
+        trend_data[str(date)][status.value] = count
+
+    return JSONResponse(content=trend_data)
+
+@router.get("/top-routes", response_model=Dict[str, int])
+def get_top_routes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    results = (
+        db.query(
+            Shipment.origin,
+            Shipment.destination,
+            func.count(Shipment.id).label("count")
+        )
+        .filter(Shipment.created_by == current_user.id)
+        .group_by(Shipment.origin, Shipment.destination)
+        .order_by(func.count(Shipment.id).desc())
+        .limit(5)
+        .all()
+    )
+
+    return {
+        f"{origin} → {destination}": count
+        for origin, destination, count in results
+    }

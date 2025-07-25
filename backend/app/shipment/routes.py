@@ -33,7 +33,7 @@ def get_db():
 # 🚚 Shipment Endpoints
 # ------------------------
 
-@shipment_router.post("/", response_model=ShipmentResponse)
+@shipment_router.post("/create-shipments", response_model=ShipmentResponse)
 def create_shipment(
     shipment_data: ShipmentCreate,
     db: Session = Depends(get_db),
@@ -234,7 +234,7 @@ def delete_shipment(
 # 🏢 Shipping Provider Endpoints
 # -------------------------------
 
-@provider_router.post("/", response_model=ShippingProviderResponse)
+@provider_router.post("/create-provider", response_model=ShippingProviderResponse)
 def create_provider(
     data: ShippingProviderCreate,
     db: Session = Depends(get_db),
@@ -258,7 +258,7 @@ def create_provider(
     return provider
 
 
-@provider_router.get("/", response_model=List[ShippingProviderResponse])
+@provider_router.get("/list-provider", response_model=List[ShippingProviderResponse])
 def list_providers(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -268,7 +268,7 @@ def list_providers(
     ).all()
 
 
-@provider_router.delete("/{provider_id}", status_code=204)
+@provider_router.delete("/delete-provider/{provider_id}", status_code=204)
 def delete_provider(
     provider_id: UUID,
     db: Session = Depends(get_db),
@@ -287,7 +287,7 @@ def delete_provider(
     return
 
 
-@provider_router.patch("/{provider_id}", response_model=ShippingProviderResponse)
+@provider_router.patch("/patch-provider/{provider_id}", response_model=ShippingProviderResponse)
 def update_provider(
     provider_id: UUID,
     data: ShippingProviderCreate,  # Reusing the same schema for update
