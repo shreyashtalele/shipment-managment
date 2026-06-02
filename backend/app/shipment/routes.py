@@ -1,3 +1,5 @@
+from operator import or_
+
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
@@ -183,8 +185,16 @@ def update_shipment_status_or_delivery(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    try:
+        shipment_uuid = UUID(shipment_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid shipment id")
+
     shipment = db.query(Shipment).filter(
-        Shipment.shipment_id == shipment_id,
+        or_(
+            Shipment.shipment_id == shipment_uuid,
+            Shipment.id == shipment_uuid
+        ),
         Shipment.created_by == current_user.id
     ).first()
 
@@ -193,11 +203,13 @@ def update_shipment_status_or_delivery(
 
     if update_data.status is not None:
         shipment.status = update_data.status
+
     if update_data.estimated_delivery is not None:
         shipment.estimated_delivery = update_data.estimated_delivery
 
     db.commit()
     db.refresh(shipment)
+
     return shipment
 
 @shipment_router.delete("/delete-all", status_code=status.HTTP_204_NO_CONTENT)
@@ -215,8 +227,16 @@ def delete_shipment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    try:
+        shipment_uuid = UUID(shipment_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid shipment id")
+
     shipment = db.query(Shipment).filter(
-        Shipment.shipment_id == shipment_id,
+        or_(
+            Shipment.shipment_id == shipment_uuid,
+            Shipment.id == shipment_uuid
+        ),
         Shipment.created_by == current_user.id
     ).first()
 

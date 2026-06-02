@@ -10,18 +10,15 @@ export type ShippingProviderData = {
 
 export type ShippingProvider = ShippingProviderData & {
   id: string;
-  created_by: string;
+  created_by?: string;
 };
 
 type APIResponse<T> =
   | { status: "success"; data: T }
   | { status: "error"; message: string };
 
-/**
- * Get all shipping providers
- */
 export const getAllShippingProviders = async (
-  token: string
+  token: string,
 ): Promise<APIResponse<ShippingProvider[]>> => {
   try {
     const res = await fetch(`${BASE_URL}/providers/list-provider`, {
@@ -40,17 +37,14 @@ export const getAllShippingProviders = async (
 
     const data = await res.json();
     return { status: "success", data };
-  } catch (err) {
+  } catch {
     return { status: "error", message: "Network error" };
   }
 };
 
-/**
- * Create a new shipping provider
- */
 export const createShippingProvider = async (
   token: string,
-  data: ShippingProviderData
+  data: ShippingProviderData,
 ): Promise<APIResponse<ShippingProvider>> => {
   try {
     const res = await fetch(`${BASE_URL}/providers/create-provider`, {
@@ -72,18 +66,15 @@ export const createShippingProvider = async (
 
     const responseData = await res.json();
     return { status: "success", data: responseData };
-  } catch (err) {
+  } catch {
     return { status: "error", message: "Network error" };
   }
 };
 
-/**
- * Update a shipping provider
- */
 export const updateShippingProvider = async (
   token: string,
   id: string,
-  data: ShippingProviderData
+  data: ShippingProviderData,
 ): Promise<APIResponse<ShippingProvider>> => {
   try {
     const res = await fetch(`${BASE_URL}/providers/patch-provider/${id}`, {
@@ -105,7 +96,7 @@ export const updateShippingProvider = async (
 
     const responseData = await res.json();
     return { status: "success", data: responseData };
-  } catch (err) {
+  } catch {
     return { status: "error", message: "Network error" };
   }
 };

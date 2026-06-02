@@ -8,12 +8,12 @@ class ShipmentCreate(BaseModel):
     origin: str
     destination: str
     status: ShipmentStatus
-    provider_id: UUID  # ✅ Updated to UUID for consistency
+    provider_id: UUID  
     estimated_delivery: date
     weight_kg: float
     dimensions: str
     description: Optional[str] = None
-    external_tracking_id: Optional[str] = None  # ✅ Optional user-defined tracking ID
+    external_tracking_id: Optional[str] = None  
 
 class ShipmentUpdate(BaseModel):
     status: Optional[ShipmentStatus] = None
@@ -23,14 +23,20 @@ class ShipmentResponse(BaseModel):
     id: UUID
     shipment_id: UUID
     tracking_id: UUID
-    external_tracking_id: Optional[str] = None  # ✅ Shown in responses
+
+    external_tracking_id: Optional[str] = None
+
     origin: str
     destination: str
     status: ShipmentStatus
+
+    provider_id: UUID   
+
     estimated_delivery: date
     weight_kg: float
     dimensions: str
     description: Optional[str] = None
+
     created_at: datetime
 
     class Config:
